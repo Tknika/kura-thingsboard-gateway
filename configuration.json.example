@@ -1,0 +1,11 @@
+{
+    "MQTT_HOST": "localhost",
+    "MQTT_PORT": 1883,
+    "MQTT_USERNAME": "",
+    "MQTT_PASSWORD": "",
+    "MQTT_CLIENT_ID": "kura-tb-gateway",
+    "KURA_PREFIX": "$EDC",
+    "THINGSBOARD_HOST": "",
+    "THINGSBOARD_PORT": 1883,
+    "THINGSBOARD_KEY": "" 
+}

@@ -1,0 +1,7 @@
+__pycache__
+venv
+env
+old
+registered_devices.json
+configuration.json
+.vscode

@@ -1,0 +1,4 @@
+paho-mqtt
+protobuf
+tb-mqtt-client
+watchdog
