@@ -51,7 +51,8 @@ if __name__ == "__main__":
     client.loop_start()
 
     kura_devices_handler = KuraDevicesHandler(configuration_handler.configuration["KURA_PREFIX"], client)
-    tb_gateway = TbGatewayHandler(configuration_handler.configuration["THINGSBOARD_HOST"], configuration_handler.configuration["THINGSBOARD_KEY"], kura_devices_handler)
+    tb_gateway = TbGatewayHandler(configuration_handler.configuration["THINGSBOARD_HOST"], configuration_handler.configuration["THINGSBOARD_KEY"], 
+                                    kura_devices_handler, configuration_handler.configuration["THINGSBOARD_PORT"])
     
     tb_gateway.start()
     kura_devices_handler.start()

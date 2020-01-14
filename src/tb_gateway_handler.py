@@ -10,8 +10,9 @@ logger = logging.getLogger(__name__)
 
 class TbGatewayHandler(object):
 
-    def __init__(self, hostname, key, data_provider):
+    def __init__(self, hostname, key, data_provider, port=1883):
         self.hostname = hostname
+        self.port = port
         self.key = key
         self.tb_connection = TBGatewayMqttClient(self.hostname, self.key)
         self.data_provider = data_provider
@@ -23,7 +24,7 @@ class TbGatewayHandler(object):
     def start(self):
         logger.debug("Starting TB gateway connection")
         self.data_provider.register_callback(self.__data_update_handler)
-        self.tb_connection.connect()
+        self.tb_connection.connect(port=self.port)
         while not self.is_connected():
             time.sleep(0.1)
         self.tb_connection.gw_set_server_side_rpc_request_handler(self.__rpc_request_handler)
