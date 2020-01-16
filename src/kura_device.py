@@ -87,6 +87,7 @@ class KuraDevice(object):
                 self.channels[channel_name] = { "asset": asset_name, "type": channel_type, "mode": channel_mode, "value": None }
 
     def __request_asset_values(self, asset=None, channels=None):
+        logger.debug("Sending device '{}' assets value request".format(self.id))
         app_id = "ASSET-V1"
         resource_id = "EXEC/read"
         request_id = uuid.uuid4().hex
