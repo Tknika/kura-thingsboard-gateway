@@ -4,6 +4,7 @@
 import json
 import kura_payload_handler
 import logging
+import threading
 import time
 import uuid
 
@@ -21,6 +22,8 @@ class KuraDevice(object):
         self.channels = {}
         self.callback = None
         self.mqtt_connection = mqtt_connection
+        self.__assets_timer = None
+        self.__asset_values_timer = None
 
     def start(self):
         logger.debug("Starting device '{}'".format(self.id))
@@ -66,11 +69,18 @@ class KuraDevice(object):
         metrics = { "request.id": request_id, "requester.client.id": self.requester_id}
         payload = kura_payload_handler.create_payload(metrics)
 
-        self.mqtt_connection.publish(pub_topic, payload)
+        # Start the timeout timer
+        self.__assets_timer = threading.Timer(2, self.__assets_timeout_handler)
+        self.__assets_timer.daemon = True
+        self.__assets_timer.start()
 
+        self.mqtt_connection.publish(pub_topic, payload)
 
     def __assets_request_handler(self, client, obj, msg):
         logger.debug("Getting device '{}' assets response".format(self.id))
+        if self.__assets_timer.is_alive():
+            logger.debug("Stopping device '{}' assets timer".format(self.id))
+            self.__assets_timer.cancel()
         self.mqtt_connection.unsubscribe(msg.topic)
         message = kura_payload_handler.decode_message(msg.payload)
         body_string = message.body.decode("utf-8")
@@ -86,6 +96,10 @@ class KuraDevice(object):
                 self.assets[asset_name][channel_name] = { "type": channel_type, "mode": channel_mode, "value": None }
                 self.channels[channel_name] = { "asset": asset_name, "type": channel_type, "mode": channel_mode, "value": None }
 
+    def __assets_timeout_handler(self):
+        logger.error("Device '{}' has not responded to the assets request".format(self.id))
+        self.__request_assets()
+
     def __request_asset_values(self, asset=None, channels=None):
         logger.debug("Sending device '{}' assets value request".format(self.id))
         app_id = "ASSET-V1"
@@ -100,10 +114,18 @@ class KuraDevice(object):
         metrics = { "request.id": request_id, "requester.client.id": self.requester_id}
         payload = kura_payload_handler.create_payload(metrics)
 
+        # Start the timeout timer
+        self.__asset_values_timer = threading.Timer(2, self.__asset_values_timeout_handler)
+        self.__asset_values_timer.daemon = True
+        self.__asset_values_timer.start()
+
         self.mqtt_connection.publish(pub_topic, payload)
 
     def __asset_values_request_handler(self, client, obj, msg):
         logger.debug("Getting device '{}' asset values response".format(self.id))
+        if self.__asset_values_timer.is_alive():
+            logger.debug("Stopping device '{}' asset values timer".format(self.id))
+            self.__asset_values_timer.cancel()
         self.mqtt_connection.unsubscribe(msg.topic)
         message = kura_payload_handler.decode_message(msg.payload)
         body_string = message.body.decode("utf-8")
@@ -120,7 +142,11 @@ class KuraDevice(object):
                 channel_value = channel["value"]
                 if self.channels[channel_name]["mode"] != "READ":
                     self.channels[channel_name]["value"] = channel_value
-                    self.callback(self.id, "attribute_changed", { channel_name: channel_value})              
+                    self.callback(self.id, "attribute_changed", { channel_name: channel_value})
+
+    def __asset_values_timeout_handler(self):
+        logger.error("Device '{}' has not responded to the asset values request".format(self.id))
+        self.__request_asset_values()
 
     def __write_channel_value(self, asset=None, channel=None, values=None):
         app_id = "ASSET-V1"
