@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class KuraDevicesHandler(object):
 
-    def __init__(self, kura_prefix, mqtt_connection, filename="registered_devices.json"):
+    def __init__(self, kura_prefix, mqtt_connection, filename="conf/registered_devices.json"):
         self.kura_prefix = kura_prefix
         self.kura_birth_topic = "{}/+/+/MQTT/BIRTH".format(self.kura_prefix)
         self.mqtt_connection = mqtt_connection
