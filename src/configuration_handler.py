@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class ConfigurationHandler(object):
 
-    def __init__(self, file="configuration.json"):
+    def __init__(self, file="conf/configuration.json"):
         self.file_ = file
         self.file_path = os.path.realpath(self.file_)
         self.file_folder = os.path.dirname(self.file_path)
@@ -78,4 +78,3 @@ class FileModifiedHandler(FileModifiedEvent):
         if event.src_path.split("/")[-1] != self.file_name:
             return
         self.on_modified(event.src_path)
-            
